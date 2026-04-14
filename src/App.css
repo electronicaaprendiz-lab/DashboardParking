@@ -1,0 +1,79 @@
+:root {
+    --bg-color: black;
+}
+
+/* 1. BASE DEL DOCUMENTO */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000000 !important; /* Negro puro */
+    overflow: hidden; /* Elimina scrollbars */
+    /*cursor: none; /*          Doble seguridad para ocultar mouse */
+}
+
+/* 2. CONTENEDOR PRINCIPAL */
+.main-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.stats-grid {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Deja el espacio sobrante entre bloques */
+    align-items: center;
+    width: 90vw;
+    height: 90vh;
+    padding: 0.25cm; /* Margen físico real si el navegador lo soporta */
+    box-sizing: border-box;
+}
+
+.row-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Forzamos el área de 30cm de alto */
+    /* En una pantalla de 96cm, 31.25vh son exactos 30cm */
+    height: 21.25vh;     /* 31.25 % */ 
+    width: 90%;         /* 100 % */
+    margin: 1cm 0; /* Separación entre filas */
+}
+
+.icon-container {
+    /* Forzamos el área de 30x30 cm para el icono */
+    width: 31.25vh; 
+    height: 31.25vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1cm; /* Espacio de separación entre icono y número */
+}
+
+.category-icon {
+    /* La imagen usará el espacio interno dejando el margen de 1cm que pediste */
+    width: 100%; 
+    height: 100%;
+    object-fit: contain;
+}
+
+.number {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 900;
+    line-height: 1;
+    /* Ajuste de tamaño para que el número quepa en los 30cm de alto */
+    font-size: 31.25vh; 
+    width: 1.2em;
+    text-align: center;
+    
+    /* Profundidad */
+    text-shadow: 
+        4px 4px 0px rgb(255, 255, 255),
+        8px 8px 15px rgba(0,0,0,0.9);
+}
