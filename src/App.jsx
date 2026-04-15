@@ -3,7 +3,7 @@ import * as signalR from "@microsoft/signalr";
 import "./App.css";
 
 const CONFIG = {
-API_URL: "https://serverparking-production.up.railway.app/Hub",
+  API_URL: "https://serverparking-production.up.railway.app/Hub",
   COLORS: {
     carros: "#008450",
     motos: "#EFB810",
@@ -14,11 +14,18 @@ API_URL: "https://serverparking-production.up.railway.app/Hub",
     motos: "/icons/motos.png",
     discapacitados: "/icons/discapacitados.png"
   },
-  CHECK_INTERVAL: 5000 // Si no hay datos en 5s, borra los números
+  // MODIFICA ESTO PARA MOVER TODO EL DISEÑO
+  LAYOUT: {
+    gridGap: "2vh",           // Separación vertical entre filas
+    iconSize: "30vh",         // Tamaño de los iconos (alto y ancho)
+    numberFontSize: "32vh",   // Tamaño de la fuente de los números
+    spacingIconNumber: "4cm", // Espacio entre el icono y el número
+    alignment: "center"       // Alineación general
+  },
+  CHECK_INTERVAL: 5000 
 };
 
 function App() {
-  // Ahora el estado inicial tiene las llaves pero con valores null
   const [data, setData] = useState({
     carros: null,
     motos: null,
@@ -29,11 +36,8 @@ function App() {
 
   const startWatchdog = () => {
     if (watchdogRef.current) clearTimeout(watchdogRef.current);
-    
     watchdogRef.current = setTimeout(() => {
-      // Ponemos los valores en null, pero mantenemos las llaves para que los iconos sigan ahí
       setData({ carros: null, motos: null, discapacitados: null });
-      console.warn("⚠️ Conexión inactiva. Ocultando números...");
     }, CONFIG.CHECK_INTERVAL);
   };
 
@@ -60,18 +64,33 @@ function App() {
 
   return (
     <div className="main-container">
-      <div className="stats-grid">
+      <div className="stats-grid" style={{ gap: CONFIG.LAYOUT.gridGap }}>
         {Object.keys(data).map((key) => (
-          <div className="row-item" key={key}>
-            {/* El icono SIEMPRE se renderiza */}
-            <div className="icon-container">
-              <img src={CONFIG.ICONS[key]} alt={key} className="category-icon" />
+          <div className="row-item" key={key} style={{ gap: CONFIG.LAYOUT.spacingIconNumber }}>
+            
+            {/* Mitad Izquierda: El icono se pega a la derecha de su contenedor */}
+            <div className="icon-wrapper">
+              <div 
+                className="icon-container" 
+                style={{ width: CONFIG.LAYOUT.iconSize, height: CONFIG.LAYOUT.iconSize }}
+              >
+                <img src={CONFIG.ICONS[key]} alt={key} className="category-icon" />
+              </div>
             </div>
             
-            {/* El número SOLO se renderiza si no es null */}
-            <div className="number" style={{ color: CONFIG.COLORS[key] }}>
-              {data[key] !== null ? data[key] : ""}
+            {/* Mitad Derecha: El número se pega a la izquierda de su contenedor */}
+            <div className="number-wrapper">
+              <div 
+                className="number" 
+                style={{ 
+                  color: CONFIG.COLORS[key], 
+                  fontSize: CONFIG.LAYOUT.numberFontSize 
+                }}
+              >
+                {data[key] !== null ? data[key] : ""}
+              </div>
             </div>
+
           </div>
         ))}
       </div>
