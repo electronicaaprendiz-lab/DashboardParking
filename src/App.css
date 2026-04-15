@@ -20,8 +20,69 @@ html, body {
     align-items: center;
     justify-content: center;
     background-color: black;
+    position: relative;
 }
 
+/* VENTANA DE AJUSTES FLOTANTE */
+.admin-window {
+    position: fixed;
+    width: 280px;
+    background: #2c3e50;
+    border: 1px solid #444;
+    border-radius: 10px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+    z-index: 9999;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    user-select: none;
+}
+
+.admin-header {
+    background: #1a252f;
+    padding: 12px;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move;
+    font-weight: bold;
+    font-size: 14px;
+    border-bottom: 1px solid #34495e;
+}
+
+.admin-header button {
+    background: #e74c3c;
+    border: none;
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.admin-content {
+    padding: 20px;
+}
+
+.control-group {
+    margin-bottom: 15px;
+}
+
+.control-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #bdc3c7;
+}
+
+.control-group input[type="range"] {
+    width: 100%;
+    accent-color: #EFB810;
+    cursor: pointer;
+}
+
+/* DASHBOARD */
 .stats-grid {
     display: flex;
     flex-direction: column;
@@ -36,17 +97,16 @@ html, body {
     width: 100%;
 }
 
-/* CONTENEDORES PARA EVITAR DESPLAZAMIENTOS */
 .icon-wrapper {
-    flex: 1; /* Toma la mitad izquierda */
+    flex: 1;
     display: flex;
-    justify-content: flex-end; /* Pega el icono al centro */
+    justify-content: flex-end;
 }
 
 .number-wrapper {
-    flex: 1; /* Toma la mitad derecha */
+    flex: 1;
     display: flex;
-    justify-content: flex-start; /* Pega el número al centro */
+    justify-content: flex-start;
 }
 
 .icon-container {
@@ -66,9 +126,7 @@ html, body {
     font-weight: 900;
     line-height: 0.8;
     text-align: left;
-    min-width: 1.2em; /* Reserva espacio para que el icono no baile */
-    
-    /* Profundidad (Efecto que ya tenías) */
+    min-width: 1.2em;
     text-shadow: 
         4px 4px 0px rgb(255, 255, 255),
         8px 8px 15px rgba(0,0,0,0.9);
