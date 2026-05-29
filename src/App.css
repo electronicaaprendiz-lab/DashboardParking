@@ -87,7 +87,9 @@ html, body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     width: 100%;
+    height: 100%;
 }
 
 .row-item {
@@ -95,18 +97,22 @@ html, body {
     align-items: center;
     justify-content: center;
     width: 100%;
+    /* Permite transiciones suaves al mover la barra espaciadora en los ajustes */
+    transition: gap 0.1s ease; 
 }
 
 .icon-wrapper {
     flex: 1;
     display: flex;
     justify-content: flex-end;
+    align-items: center;
 }
 
 .number-wrapper {
     flex: 1;
     display: flex;
     justify-content: flex-start;
+    align-items: center;
 }
 
 .icon-container {
@@ -122,12 +128,25 @@ html, body {
 }
 
 .number {
-    font-family: 'Montserrat', sans-serif !important;
+    font-family: 'Montserrat', 'Arial Black', sans-serif !important;
     font-weight: 900;
     line-height: 0.8;
     text-align: left;
-    min-width: 1.2em;
+    white-space: nowrap;
     text-shadow: 
         4px 4px 0px rgb(255, 255, 255),
         8px 8px 15px rgba(0,0,0,0.9);
+}
+
+/* Animación por si la API está desconectada o cargando en frío */
+.desconectado {
+    animation: parpadeo 1.5s infinite;
+    color: #444444 !important;
+    text-shadow: none !important; /* Quita el borde blanco para que se note apagado */
+}
+
+@keyframes parpadeo {
+    0% { opacity: 0.3; }
+    50% { opacity: 1; }
+    100% { opacity: 0.3; }
 }

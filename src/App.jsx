@@ -1,30 +1,28 @@
 import { useEffect, useState, useRef } from "react";
-import * as signalR from "@microsoft/signalr";
 import "./App.css";
 
 const DEFAULT_CONFIG = {
-  API_URL: "https://serverparking-production.up.railway.app/Hub",
+  API_URL: "https://admin-api.arexpark.com/api/v1/parqueaderos/1/ocupacion-actual-public",
   COLORS: {
     carros: "#008450",
-    motos: "#EFB810",
-    discapacitados: "#1a66eb",
+    motos: "#EFB810"
   },
   ICONS: {
     carros: "/icons/carros.png",
-    motos: "/icons/motos.png",
-    discapacitados: "/icons/discapacitados.png"
+    motos: "/icons/motos.png"
   },
   LAYOUT: {
-    gridGap: 2,           
-    iconSize: 30,         
-    numberFontSize: 32,   
-    spacingIconNumber: 4, 
+    gridGap: 4,           
+    iconSize: 25,         
+    numberFontSize: 30,   
+    spacingIconNumber: 5, 
   },
   CHECK_INTERVAL: 5000 
 };
 
 function App() {
-  const [data, setData] = useState({ carros: null, motos: null, discapacitados: null });
+  // Inicializamos con valores numéricos base para asegurar que renderice la estructura desde el segundo 1
+  const [data, setData] = useState({ carros: null, motos: null });
   const [showAdmin, setShowAdmin] = useState(false);
   const [adminPos, setAdminPos] = useState({ x: 50, y: 50 });
   
@@ -33,31 +31,38 @@ function App() {
     return saved ? JSON.parse(saved) : DEFAULT_CONFIG.LAYOUT;
   });
 
-  const watchdogRef = useRef(null);
   const isDragging = useRef(false);
   const offset = useRef({ x: 0, y: 0 });
 
-  const startWatchdog = () => {
-    if (watchdogRef.current) clearTimeout(watchdogRef.current);
-    watchdogRef.current = setTimeout(() => {
-      setData({ carros: null, motos: null, discapacitados: null });
-    }, DEFAULT_CONFIG.CHECK_INTERVAL);
+  const consultarAPI = async () => {
+    try {
+      const response = await fetch(DEFAULT_CONFIG.API_URL);
+      const json = await response.json();
+
+      if (json.succeeded && json.data) {
+        // Creamos un nuevo objeto rompiendo la referencia anterior para obligar a React a renderizar
+        const nuevoEstado = { ...data };
+
+        json.data.forEach(item => {
+          if (item.tipoVehiculoId === 1) {
+            nuevoEstado.carros = item.activo ? (item.maximo - item.ocupados) : null; 
+          } else if (item.tipoVehiculoId === 2) {
+            nuevoEstado.motos = item.activo ? (item.maximo - item.ocupados) : null;
+          }
+        });
+
+        // Guardamos el estado con la nueva referencia
+        setData(nuevoEstado);
+      }
+    } catch (error) {
+      console.error("❌ Error consultando la API de ArexPark:", error);
+      // Si hay error de red local, no limpiamos la pantalla, dejamos los números que ya estaban
+    }
   };
 
   useEffect(() => {
-    const connection = new signalR.HubConnectionBuilder()
-      .withUrl(DEFAULT_CONFIG.API_URL)
-      .withAutomaticReconnect()
-      .build();
-
-    connection.on("update", (newData) => {
-      setData(newData); 
-      startWatchdog(); 
-    });
-
-    connection.start()
-      .then(() => console.log("✅ Conectado"))
-      .catch(err => console.error("❌ Error:", err));
+    consultarAPI();
+    const intervalo = setInterval(consultarAPI, DEFAULT_CONFIG.CHECK_INTERVAL);
 
     const handleKeyPress = (e) => {
       if (e.key.toLowerCase() === 'a') setShowAdmin(prev => !prev);
@@ -65,31 +70,22 @@ function App() {
     window.addEventListener('keydown', handleKeyPress);
 
     return () => {
-      if (watchdogRef.current) clearTimeout(watchdogRef.current);
-      connection.stop();
+      clearInterval(intervalo);
       window.removeEventListener('keydown', handleKeyPress);
     };
   }, []);
 
-  // Lógica para arrastrar la ventana
   const onMouseDown = (e) => {
     isDragging.current = true;
-    offset.current = {
-      x: e.clientX - adminPos.x,
-      y: e.clientY - adminPos.y
-    };
+    offset.current = { x: e.clientX - adminPos.x, y: e.clientY - adminPos.y };
   };
 
   useEffect(() => {
     const onMouseMove = (e) => {
       if (!isDragging.current) return;
-      setAdminPos({
-        x: e.clientX - offset.current.x,
-        y: e.clientY - offset.current.y
-      });
+      setAdminPos({ x: e.clientX - offset.current.x, y: e.clientY - offset.current.y });
     };
     const onMouseUp = () => isDragging.current = false;
-
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
     return () => {
@@ -109,10 +105,7 @@ function App() {
     <div className="main-container" onDoubleClick={() => setShowAdmin(!showAdmin)}>
       
       {showAdmin && (
-        <div 
-          className="admin-window" 
-          style={{ left: `${adminPos.x}px`, top: `${adminPos.y}px` }}
-        >
+        <div className="admin-window" style={{ left: `${adminPos.x}px`, top: `${adminPos.y}px` }}>
           <div className="admin-header" onMouseDown={onMouseDown}>
             <span>⚙️ Ajustes de Pantalla</span>
             <button onClick={() => setShowAdmin(false)}>×</button>
@@ -131,25 +124,25 @@ function App() {
               <input type="range" name="numberFontSize" min="10" max="80" step="1" value={layout.numberFontSize} onChange={handleLayoutChange} />
             </div>
             <div className="control-group">
-              <label>Espacio Icono-Número: {layout.spacingIconNumber}cm</label>
-              <input type="range" name="spacingIconNumber" min="0" max="15" step="0.5" value={layout.spacingIconNumber} onChange={handleLayoutChange} />
+              <label>Espacio Icono-Número: {layout.spacingIconNumber}vw</label>
+              <input type="range" name="spacingIconNumber" min="0" max="30" step="0.5" value={layout.spacingIconNumber} onChange={handleLayoutChange} />
             </div>
-            <p style={{fontSize: '10px', color: '#888'}}>Doble clic en fondo o tecla 'A' para cerrar</p>
+            <p style={{fontSize: '10px', color: '#888'}}>Doble clic o tecla 'A' para cerrar</p>
           </div>
         </div>
       )}
 
       <div className="stats-grid" style={{ gap: `${layout.gridGap}vh` }}>
         {Object.keys(data).map((key) => (
-          <div className="row-item" key={key} style={{ gap: `${layout.spacingIconNumber}cm` }}>
+          <div className="row-item" key={key} style={{ gap: `${layout.spacingIconNumber}vw` }}>
             <div className="icon-wrapper">
               <div className="icon-container" style={{ width: `${layout.iconSize}vh`, height: `${layout.iconSize}vh` }}>
                 <img src={DEFAULT_CONFIG.ICONS[key]} alt={key} className="category-icon" />
               </div>
             </div>
             <div className="number-wrapper">
-              <div className="number" style={{ color: DEFAULT_CONFIG.COLORS[key], fontSize: `${layout.numberFontSize}vh` }}>
-                {data[key] !== null ? data[key] : ""}
+              <div className={`number ${data[key] === null ? 'desconectado' : ''}`} style={{ color: DEFAULT_CONFIG.COLORS[key], fontSize: `${layout.numberFontSize}vh` }}>
+                {data[key] !== null ? data[key] : "---"}
               </div>
             </div>
           </div>
