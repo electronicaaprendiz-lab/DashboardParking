@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import "./App.css";
 
 const DEFAULT_CONFIG = {
-  API_URL: "https://admin-api.arexpark.com/api/v1/parqueaderos/1/ocupacion-actual-public",
+  API_URL: "/api-arex/api/v1/parqueaderos/1/ocupacion-actual-public",
   COLORS: {
     carros: "#008450",
     motos: "#EFB810"
@@ -35,30 +35,29 @@ function App() {
   const offset = useRef({ x: 0, y: 0 });
 
   const consultarAPI = async () => {
-    try {
-      const response = await fetch(DEFAULT_CONFIG.API_URL);
-      const json = await response.json();
+      try {
+        const response = await fetch(DEFAULT_CONFIG.API_URL);
+        const json = await response.json();
 
-      if (json.succeeded && json.data) {
-        // Creamos un nuevo objeto rompiendo la referencia anterior para obligar a React a renderizar
-        const nuevoEstado = { ...data };
+        if (json.succeeded && json.data) {
+          // Creamos un objeto limpio desde cero
+          const nuevoEstado = { carros: null, motos: null };
 
-        json.data.forEach(item => {
-          if (item.tipoVehiculoId === 1) {
-            nuevoEstado.carros = item.activo ? (item.maximo - item.ocupados) : null; 
-          } else if (item.tipoVehiculoId === 2) {
-            nuevoEstado.motos = item.activo ? (item.maximo - item.ocupados) : null;
-          }
-        });
+          json.data.forEach(item => {
+            if (item.tipoVehiculoId === 1) {
+              nuevoEstado.carros = item.activo ? (item.maximo - item.ocupados) : null; 
+            } else if (item.tipoVehiculoId === 2) {
+              nuevoEstado.motos = item.activo ? (item.maximo - item.ocupados) : null;
+            }
+          });
 
-        // Guardamos el estado con la nueva referencia
-        setData(nuevoEstado);
+          // Guardamos el estado con la nueva información
+          setData(nuevoEstado);
+        }
+      } catch (error) {
+        console.error("❌ Error consultando la API de ArexPark:", error);
       }
-    } catch (error) {
-      console.error("❌ Error consultando la API de ArexPark:", error);
-      // Si hay error de red local, no limpiamos la pantalla, dejamos los números que ya estaban
-    }
-  };
+    };
 
   useEffect(() => {
     consultarAPI();
